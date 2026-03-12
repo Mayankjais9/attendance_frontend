@@ -4,6 +4,13 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { LucideIcon } from "lucide-react"
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  Bell,
+  Settings
+} from "lucide-react"
 
 interface SidebarNavItem {
   title: string
