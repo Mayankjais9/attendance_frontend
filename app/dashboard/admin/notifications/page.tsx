@@ -1,5 +1,6 @@
-export const dynamic = "force-dynamic";
 "use client";
+
+export const dynamic = "force-dynamic";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { SidebarNav } from "@/components/ui/sidebar-nav";
@@ -97,10 +98,11 @@ export default function AdminNotificationsPage() {
     };
 
     return (
-        <DashboardLayout userName="Admin" userEmail="admin@company.com" sidebar={<SidebarNav items={sidebarItems} />}>
-
-            {/* Page Content */}
-
+        <DashboardLayout
+            sidebar={<SidebarNav items={sidebarItems} />}
+            userName="Admin"
+            userEmail="admin@company.com"
+        >
             <div className="space-y-6 p-6">
 
                 <div className="flex items-center justify-between">
@@ -159,7 +161,6 @@ export default function AdminNotificationsPage() {
                 </Card>
 
             </div>
-
         </DashboardLayout>
     );
 }
