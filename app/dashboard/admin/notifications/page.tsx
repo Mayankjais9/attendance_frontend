@@ -1,13 +1,12 @@
 export const dynamic = "force-dynamic";
-"use client"
+"use client";
 
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { SidebarNav } from "@/components/ui/sidebar-nav";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { SidebarNav } from "@/components/ui/sidebar-nav"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
     LayoutDashboard,
     Users,
@@ -17,7 +16,7 @@ import {
     AlertTriangle,
     Info,
     Settings,
-} from "lucide-react"
+} from "lucide-react";
 
 const sidebarItems = [
     {
@@ -46,7 +45,7 @@ const sidebarItems = [
         icon: Bell,
         active: true,
     },
-]
+];
 
 const notifications = [
     {
@@ -81,34 +80,32 @@ const notifications = [
         time: "2 days ago",
         read: true,
     },
-]
+];
 
 export default function AdminNotificationsPage() {
     const getNotificationIcon = (type: string) => {
         switch (type) {
             case "success":
-                return <CheckCircle className="h-4 w-4 text-green-500" />
+                return <CheckCircle className="h-4 w-4 text-green-500" />;
             case "warning":
-                return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
             case "info":
-                return <Info className="h-4 w-4 text-blue-500" />
+                return <Info className="h-4 w-4 text-blue-500" />;
             default:
-                return <Bell className="h-4 w-4 text-muted-foreground" />
+                return <Bell className="h-4 w-4 text-muted-foreground" />;
         }
-    }
+    };
 
     return (
-        <DashboardLayout
-            sidebar={<SidebarNav items={sidebarItems} />}
-            userName="Admin"
-            userEmail="admin@company.com"
-        >
-            <div className="space-y-6">
+        <DashboardLayout userName="Admin" userEmail="admin@company.com" sidebar={<SidebarNav items={sidebarItems} />}>
+
+            {/* Page Content */}
+
+            <div className="space-y-6 p-6">
+
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-balance">
-                            Admin Notifications
-                        </h1>
+                        <h1 className="text-3xl font-bold">Admin Notifications</h1>
                         <p className="text-muted-foreground">
                             System alerts, employee updates, and administrative notifications.
                         </p>
@@ -158,8 +155,11 @@ export default function AdminNotificationsPage() {
                             ))}
                         </div>
                     </CardContent>
+
                 </Card>
+
             </div>
+
         </DashboardLayout>
-    )
+    );
 }
