@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { SidebarNav } from "@/components/ui/sidebar-nav"
@@ -22,7 +22,7 @@ const sidebarItems = [
     {
         title: "Admin Dashboard",
         href: "/dashboard/admin",
-        icon: <LayoutDashboard className="h-4 w-4" />,
+        icon: LayoutDashboard,
     },
     {
         title: "Employees",

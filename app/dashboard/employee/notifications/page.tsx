@@ -10,7 +10,7 @@ import { LayoutDashboard, Clock, FileText, Bell, CheckCircle, AlertTriangle, Inf
 import { api } from "@/lib/api"; // ✅ using your existing API helper
 
 const sidebarItems = [
-  { title: "Dashboard", href: "/dashboard/employee", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { title: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard },
   { title: "My Attendance History", href: "/dashboard/employee/history", icon: Clock },
   { title: "Leave Requests", href: "/dashboard/employee/leave", icon: FileText },
   { title: "Notifications", href: "/dashboard/employee/notifications", icon: Bell, active: true },

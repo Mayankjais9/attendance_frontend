@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 const sidebarItems = [
-  { title: "Dashboard", href: "/dashboard/employee", icon: <LayoutDashboard className="h-4 w-4" />, active: true },
+  { title: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard, active: true },
   { title: "My Attendance History", href: "/dashboard/employee/history", icon: Clock },
   { title: "Leave Requests", href: "/dashboard/employee/leave", icon: FileText },
   { title: "Notifications", href: "/dashboard/employee/notifications", icon: Bell },
