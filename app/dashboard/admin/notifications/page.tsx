@@ -1,4 +1,6 @@
-"use client"
+"use client";
+
+export const dynamic = "force-dynamic";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { SidebarNav } from "@/components/ui/sidebar-nav"
