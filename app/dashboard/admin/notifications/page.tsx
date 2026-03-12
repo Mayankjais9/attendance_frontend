@@ -22,7 +22,7 @@ const sidebarItems = [
     {
         title: "Admin Dashboard",
         href: "/dashboard/admin",
-        icon: LayoutDashboard,
+        icon: <LayoutDashboard className="h-4 w-4" />,
     },
     {
         title: "Employees",

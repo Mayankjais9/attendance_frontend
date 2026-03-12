@@ -11,7 +11,7 @@ import { LayoutDashboard, Clock, FileText, Bell } from "lucide-react";
 import { api } from "@/lib/api"; // ✅ use centralized API helper
 
 const sidebarItems = [
-  { title: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard },
+  { title: "Dashboard", href: "/dashboard/employee", icon: <LayoutDashboard className="h-4 w-4" /> },
   { title: "My Attendance History", href: "/dashboard/employee/history", icon: Clock, active: true },
   { title: "Leave Requests", href: "/dashboard/employee/leave", icon: FileText },
   { title: "Notifications", href: "/dashboard/employee/notifications", icon: Bell },

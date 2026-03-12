@@ -41,7 +41,7 @@ const sidebarItems = [
   {
     title: "Dashboard",
     href: "/dashboard/hr",
-    icon: LayoutDashboard,
+    icon: <LayoutDashboard className="h-4 w-4" />,
     active: true,
   },
   {
@@ -176,339 +176,339 @@ export default function HRDashboard() {
 
   return (
     <RequireRole allow={["HR", "Admin"]}>
-    <DashboardLayout sidebar={<SidebarNav items={sidebarItems} />} userName="Lisa HR" userEmail="lisa.hr@company.com">
-      <div className="space-y-6">
-        <AttendanceMarking userName="Lisa HR" userRole="HR Manager" />
+      <DashboardLayout sidebar={<SidebarNav items={sidebarItems} />} userName="Lisa HR" userEmail="lisa.hr@company.com">
+        <div className="space-y-6">
+          <AttendanceMarking userName="Lisa HR" userRole="HR Manager" />
 
-        {/* Welcome Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-balance">HR Management Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage employee records, track attendance trends, and oversee payroll.
-          </p>
-        </div>
+          {/* Welcome Header */}
+          <div>
+            <h1 className="text-3xl font-bold text-balance">HR Management Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage employee records, track attendance trends, and oversee payroll.
+            </p>
+          </div>
 
-        {/* Key Metrics */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{payrollSummary.totalEmployees}</div>
-              <p className="text-xs text-muted-foreground">Active workforce</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Attendance</CardTitle>
-              <UserCheck className="h-4 w-4 text-chart-1" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">93%</div>
-              <p className="text-xs text-muted-foreground">This month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Payroll</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{payrollSummary.totalPayroll}</div>
-              <p className="text-xs text-muted-foreground">Monthly budget</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Payroll Growth</CardTitle>
-              <TrendingUp className="h-4 w-4 text-chart-1" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{payrollSummary.payrollIncrease}</div>
-              <p className="text-xs text-muted-foreground">Year over year</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Tabs */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="employees">Employee Database</TabsTrigger>
-            <TabsTrigger value="payroll">Payroll Summary</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Attendance Trends */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Attendance Trends</CardTitle>
-                  <CardDescription>Company-wide attendance over the last 7 months</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={attendanceTrends}>
-                      <XAxis dataKey="month" />
-                      <YAxis domain={[80, 100]} />
-                      <Tooltip />
-                      <Area
-                        type="monotone"
-                        dataKey="attendance"
-                        stroke="hsl(var(--chart-1))"
-                        fill="hsl(var(--chart-1))"
-                        fillOpacity={0.2}
-                        name="Attendance %"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Department Overview */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Department Overview</CardTitle>
-                  <CardDescription>Employee distribution by department</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-chart-1"></div>
-                      <span className="text-sm">Engineering</span>
-                    </div>
-                    <span className="font-semibold">8 employees</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-chart-2"></div>
-                      <span className="text-sm">Marketing</span>
-                    </div>
-                    <span className="font-semibold">4 employees</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-chart-3"></div>
-                      <span className="text-sm">Sales</span>
-                    </div>
-                    <span className="font-semibold">3 employees</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-chart-4"></div>
-                      <span className="text-sm">Design</span>
-                    </div>
-                    <span className="font-semibold">2 employees</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="employees" className="space-y-6">
+          {/* Key Metrics */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Employee Database</CardTitle>
-                    <CardDescription>Manage employee records and information</CardDescription>
-                  </div>
-                  <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Employee
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Add New Employee</DialogTitle>
-                        <DialogDescription>Enter the employee details below.</DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="name" className="text-right">
-                            Name
-                          </Label>
-                          <Input id="name" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="email" className="text-right">
-                            Email
-                          </Label>
-                          <Input id="email" type="email" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="department" className="text-right">
-                            Department
-                          </Label>
-                          <Select>
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select department" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="engineering">Engineering</SelectItem>
-                              <SelectItem value="marketing">Marketing</SelectItem>
-                              <SelectItem value="sales">Sales</SelectItem>
-                              <SelectItem value="design">Design</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="position" className="text-right">
-                            Position
-                          </Label>
-                          <Input id="position" className="col-span-3" />
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setIsAddEmployeeOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={() => setIsAddEmployeeOpen(false)}>Add Employee</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search employees..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Join Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Attendance</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredEmployees.map((employee) => (
-                      <TableRow key={employee.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={employee.avatar || "/placeholder.svg"} />
-                              <AvatarFallback>
-                                {employee.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{employee.name}</p>
-                              <p className="text-sm text-muted-foreground">{employee.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{employee.department}</TableCell>
-                        <TableCell>{employee.position}</TableCell>
-                        <TableCell>{new Date(employee.joinDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{getStatusBadge(employee.status)}</TableCell>
-                        <TableCell>
-                          <span className={getAttendanceColor(employee.attendance)}>{employee.attendance}%</span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="text-2xl font-bold">{payrollSummary.totalEmployees}</div>
+                <p className="text-xs text-muted-foreground">Active workforce</p>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="payroll" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Avg Attendance</CardTitle>
+                <UserCheck className="h-4 w-4 text-chart-1" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">93%</div>
+                <p className="text-xs text-muted-foreground">This month</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Payroll</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{payrollSummary.totalPayroll}</div>
+                <p className="text-xs text-muted-foreground">Monthly budget</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Payroll Growth</CardTitle>
+                <TrendingUp className="h-4 w-4 text-chart-1" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{payrollSummary.payrollIncrease}</div>
+                <p className="text-xs text-muted-foreground">Year over year</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Tabs */}
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="employees">Employee Database</TabsTrigger>
+              <TabsTrigger value="payroll">Payroll Summary</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Attendance Trends */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Attendance Trends</CardTitle>
+                    <CardDescription>Company-wide attendance over the last 7 months</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={attendanceTrends}>
+                        <XAxis dataKey="month" />
+                        <YAxis domain={[80, 100]} />
+                        <Tooltip />
+                        <Area
+                          type="monotone"
+                          dataKey="attendance"
+                          stroke="hsl(var(--chart-1))"
+                          fill="hsl(var(--chart-1))"
+                          fillOpacity={0.2}
+                          name="Attendance %"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Department Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Department Overview</CardTitle>
+                    <CardDescription>Employee distribution by department</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-chart-1"></div>
+                        <span className="text-sm">Engineering</span>
+                      </div>
+                      <span className="font-semibold">8 employees</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-chart-2"></div>
+                        <span className="text-sm">Marketing</span>
+                      </div>
+                      <span className="font-semibold">4 employees</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-chart-3"></div>
+                        <span className="text-sm">Sales</span>
+                      </div>
+                      <span className="font-semibold">3 employees</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-chart-4"></div>
+                        <span className="text-sm">Design</span>
+                      </div>
+                      <span className="font-semibold">2 employees</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="employees" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Payroll Summary</CardTitle>
-                  <CardDescription>Monthly payroll breakdown and statistics</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Employee Database</CardTitle>
+                      <CardDescription>Manage employee records and information</CardDescription>
+                    </div>
+                    <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Employee
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Add New Employee</DialogTitle>
+                          <DialogDescription>Enter the employee details below.</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                              Name
+                            </Label>
+                            <Input id="name" className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="email" className="text-right">
+                              Email
+                            </Label>
+                            <Input id="email" type="email" className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="department" className="text-right">
+                              Department
+                            </Label>
+                            <Select>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select department" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="engineering">Engineering</SelectItem>
+                                <SelectItem value="marketing">Marketing</SelectItem>
+                                <SelectItem value="sales">Sales</SelectItem>
+                                <SelectItem value="design">Design</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="position" className="text-right">
+                              Position
+                            </Label>
+                            <Input id="position" className="col-span-3" />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsAddEmployeeOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={() => setIsAddEmployeeOpen(false)}>Add Employee</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium">Total Monthly Payroll</p>
-                      <p className="text-2xl font-bold">{payrollSummary.totalPayroll}</p>
+                <CardContent>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="relative flex-1 max-w-sm">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search employees..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
                     </div>
-                    <DollarSign className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium">Average Salary</p>
-                      <p className="text-2xl font-bold">{payrollSummary.avgSalary}</p>
-                    </div>
-                    <Users className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium">YoY Growth</p>
-                      <p className="text-2xl font-bold text-chart-1">{payrollSummary.payrollIncrease}</p>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-chart-1" />
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Salary Distribution</CardTitle>
-                  <CardDescription>Employee salary ranges by department</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Engineering</span>
-                      <span className="text-sm font-medium">$65K - $95K</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Marketing</span>
-                      <span className="text-sm font-medium">$55K - $80K</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Sales</span>
-                      <span className="text-sm font-medium">$45K - $70K</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Design</span>
-                      <span className="text-sm font-medium">$60K - $75K</span>
-                    </div>
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employee</TableHead>
+                        <TableHead>Department</TableHead>
+                        <TableHead>Position</TableHead>
+                        <TableHead>Join Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Attendance</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredEmployees.map((employee) => (
+                        <TableRow key={employee.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={employee.avatar || "/placeholder.svg"} />
+                                <AvatarFallback>
+                                  {employee.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{employee.name}</p>
+                                <p className="text-sm text-muted-foreground">{employee.email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{employee.department}</TableCell>
+                          <TableCell>{employee.position}</TableCell>
+                          <TableCell>{new Date(employee.joinDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{getStatusBadge(employee.status)}</TableCell>
+                          <TableCell>
+                            <span className={getAttendanceColor(employee.attendance)}>{employee.attendance}%</span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </DashboardLayout>
+            </TabsContent>
+
+            <TabsContent value="payroll" className="space-y-6">
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Payroll Summary</CardTitle>
+                    <CardDescription>Monthly payroll breakdown and statistics</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium">Total Monthly Payroll</p>
+                        <p className="text-2xl font-bold">{payrollSummary.totalPayroll}</p>
+                      </div>
+                      <DollarSign className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium">Average Salary</p>
+                        <p className="text-2xl font-bold">{payrollSummary.avgSalary}</p>
+                      </div>
+                      <Users className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium">YoY Growth</p>
+                        <p className="text-2xl font-bold text-chart-1">{payrollSummary.payrollIncrease}</p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-chart-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Salary Distribution</CardTitle>
+                    <CardDescription>Employee salary ranges by department</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Engineering</span>
+                        <span className="text-sm font-medium">$65K - $95K</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Marketing</span>
+                        <span className="text-sm font-medium">$55K - $80K</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Sales</span>
+                        <span className="text-sm font-medium">$45K - $70K</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Design</span>
+                        <span className="text-sm font-medium">$60K - $75K</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </DashboardLayout>
     </RequireRole>
   )
 }

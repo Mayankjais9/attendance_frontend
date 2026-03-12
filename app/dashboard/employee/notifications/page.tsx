@@ -10,7 +10,7 @@ import { LayoutDashboard, Clock, FileText, Bell, CheckCircle, AlertTriangle, Inf
 import { api } from "@/lib/api"; // ✅ using your existing API helper
 
 const sidebarItems = [
-  { title: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard },
+  { title: "Dashboard", href: "/dashboard/employee", icon: <LayoutDashboard className="h-4 w-4" /> },
   { title: "My Attendance History", href: "/dashboard/employee/history", icon: Clock },
   { title: "Leave Requests", href: "/dashboard/employee/leave", icon: FileText },
   { title: "Notifications", href: "/dashboard/employee/notifications", icon: Bell, active: true },
@@ -88,9 +88,8 @@ export default function NotificationsPage() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`flex items-start gap-3 p-4 rounded-lg border ${
-                      !notification.read ? "bg-muted/50" : ""
-                    }`}
+                    className={`flex items-start gap-3 p-4 rounded-lg border ${!notification.read ? "bg-muted/50" : ""
+                      }`}
                   >
                     {getNotificationIcon(notification.type || "info")}
                     <div className="flex-1 space-y-1">

@@ -30,7 +30,7 @@ const sidebarItems = [
   {
     title: "Dashboard",
     href: "/dashboard/admin",
-    icon: LayoutDashboard,
+    icon: <LayoutDashboard className="h-4 w-4" />,
   },
   {
     title: "Manage Users",

@@ -15,7 +15,7 @@ const sidebarItems = [
   {
     title: "Dashboard",
     href: "/dashboard/manager",
-    icon: LayoutDashboard,
+    icon: <LayoutDashboard className="h-4 w-4" />,
   },
   {
     title: "Team Attendance",
@@ -326,11 +326,11 @@ export default function TeamAttendancePage() {
                   <CardDescription>
                     {selectedDate
                       ? selectedDate.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
                       : "No date selected"}
                   </CardDescription>
                 </CardHeader>

@@ -26,7 +26,7 @@ const sidebarItems = [
   {
     title: "Dashboard",
     href: "/dashboard/manager",
-    icon: LayoutDashboard,
+    icon: <LayoutDashboard className="h-4 w-4" />,
   },
   {
     title: "Team Attendance",

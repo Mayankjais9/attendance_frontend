@@ -16,7 +16,7 @@ const sidebarItems = [
   {
     title: "Dashboard",
     href: "/dashboard/hr",
-    icon: LayoutDashboard,
+    icon: <LayoutDashboard className="h-4 w-4" />,
   },
   {
     title: "Employee Records",

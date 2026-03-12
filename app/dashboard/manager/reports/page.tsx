@@ -15,7 +15,7 @@ const sidebarItems = [
   {
     title: "Dashboard",
     href: "/dashboard/manager",
-    icon: LayoutDashboard,
+    icon: <LayoutDashboard className="h-4 w-4" />,
   },
   {
     title: "Team Attendance",
@@ -255,13 +255,12 @@ export default function ManagerReportsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-3 h-3 rounded-full ${
-                              member.attendance >= 95
+                            className={`w-3 h-3 rounded-full ${member.attendance >= 95
                                 ? "bg-chart-1"
                                 : member.attendance >= 90
                                   ? "bg-chart-5"
                                   : "bg-destructive"
-                            }`}
+                              }`}
                           ></div>
                         </div>
                       </div>
