@@ -43,6 +43,7 @@ export default function Page() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    console.log("🔥 LOGIN USING PROXY /api/auth/login");
     setError(null);
     setBusy(true);
 
