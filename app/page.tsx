@@ -23,7 +23,7 @@ import {
 
 type UserRole = "employee" | "manager" | "hr" | "admin";
 
-const API = "/api";
+const API = "/api"; // ✅ FIXED (proxy base)
 const norm = (s: string) => (s || "").trim().toLowerCase();
 
 const ROLE_PATHS: Record<UserRole, string> = {
@@ -47,14 +47,16 @@ export default function Page() {
     setBusy(true);
 
     try {
-      // 1) Login — OAuth2PasswordRequestForm expects x-www-form-urlencoded
+      // 🔥 LOGIN
       const form = new URLSearchParams();
       form.set("username", email.trim().toLowerCase());
       form.set("password", password);
 
-      const loginRes = await fetch(`${API_BASE_URL}/auth/login`, {
+      const loginRes = await fetch(`${API}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
         body: form,
       });
 
@@ -72,45 +74,56 @@ export default function Page() {
 
       const token = loginData.access_token;
       if (!token) throw new Error("No token returned.");
+
       localStorage.setItem("token", token);
 
-      // 2) Get roles (prefer /auth/login → fallback to /auth/me)
+      // 🔥 FETCH ROLES
       let rawRoles: string[] = [];
+
       if (Array.isArray(loginData.roles)) {
         rawRoles = loginData.roles;
       } else if (loginData.role) {
         rawRoles = [loginData.role];
       } else {
-        const meRes = await fetch(`${API_BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const meRes = await fetch(`${API}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
+
         if (!meRes.ok) {
           const msg = await meRes.text().catch(() => "");
-          throw new Error(msg || `Failed to fetch user profile: ${meRes.status}`);
+          throw new Error(msg || `Failed to fetch profile`);
         }
+
         const me = await meRes.json();
         if (Array.isArray(me.roles)) rawRoles = me.roles;
         else if (me.role) rawRoles = [me.role];
       }
 
-      if (!rawRoles.length) throw new Error("No role found for this user.");
+      if (!rawRoles.length) throw new Error("No role found");
 
-      // 3) Persist normalized roles for middleware/guards
+      // 🔥 SAVE ROLES
       const rolesLower = rawRoles.map((r) => norm(r)) as UserRole[];
+
       localStorage.setItem("roles", JSON.stringify(rolesLower));
-      document.cookie = `roles=${encodeURIComponent(rolesLower.join(","))}; Path=/`;
+
+      document.cookie = `roles=${encodeURIComponent(
+        rolesLower.join(",")
+      )}; Path=/`;
       document.cookie = `token=${encodeURIComponent(token)}; Path=/`;
 
-      // 4) STRICT: redirect only if the SELECTED role is actually assigned
+      // 🔥 VALIDATE ROLE
       const selected = norm(role) as UserRole;
+
       if (!rolesLower.includes(selected)) {
         setError(
-          `You selected "${role}", but your account has: ${rolesLower.join(", ")}.`
+          `You selected "${role}", but your account has: ${rolesLower.join(", ")}`
         );
-        return; // stop here; no redirect
+        return;
       }
 
-      // 5) Redirect to the chosen role
+      // 🔥 REDIRECT
       router.push(ROLE_PATHS[selected]);
     } catch (err: any) {
       setError(err?.message || "Login failed");
@@ -130,19 +143,22 @@ export default function Page() {
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-balance">AttendanceHub</h1>
             <p className="text-muted-foreground text-balance">
-              Employee Attendance &amp; Management System
+              Employee Attendance & Management System
             </p>
           </div>
         </div>
 
         {/* Login Card */}
         <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">
+              Sign In
+            </CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your dashboard
+              Enter your credentials
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
@@ -151,37 +167,34 @@ export default function Page() {
                 </p>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <div>
+                <Label>Email</Label>
                 <Input
-                  id="email"
                   type="email"
-                  placeholder="john.doe@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-background"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <div>
+                <Label>Password</Label>
                 <Input
-                  id="password"
                   type="password"
-                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-background"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="Select your role" />
+              <div>
+                <Label>Role</Label>
+                <Select
+                  value={role}
+                  onValueChange={(v) => setRole(v as UserRole)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="employee">Employee</SelectItem>
@@ -196,12 +209,6 @@ export default function Page() {
                 {busy ? "Signing In..." : "Sign In"}
               </Button>
             </form>
-
-            <div className="mt-4 text-center">
-              <a href="#" className="text-sm text-primary hover:underline">
-                Forgot your password?
-              </a>
-            </div>
           </CardContent>
         </Card>
       </div>
