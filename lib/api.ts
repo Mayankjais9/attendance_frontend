@@ -1,5 +1,5 @@
-export const API =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8081";
+// ✅ ALWAYS use proxy
+export const API = "/api";
 
 export type LoginResponse = {
   access_token: string;
@@ -9,8 +9,16 @@ export type LoginResponse = {
   roles_full?: { role_id: number; role_name: string }[];
 };
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+// 🔥 Generic API handler
+export async function api<T>(
+  path: string,
+  init: RequestInit = {}
+): Promise<T> {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("token") || ""
+      : "";
+
   const res = await fetch(`${API}${path}`, {
     ...init,
     headers: {
@@ -20,22 +28,37 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     },
     cache: "no-store",
   });
+
   if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new Error(`${res.status} ${text}`);
+    let message = "Something went wrong";
+    try {
+      const err = await res.json();
+      message = err?.detail || message;
+    } catch {
+      message = await res.text();
+    }
+    throw new Error(`${res.status} - ${message}`);
   }
-  return res.json() as Promise<T>;
+
+  return res.json();
 }
 
-export async function loginUser(email: string, password: string): Promise<LoginResponse> {
+// 🔥 Login function (uses proxy)
+export async function loginUser(
+  email: string,
+  password: string
+): Promise<LoginResponse> {
   const body = new URLSearchParams();
   body.set("username", email.trim().toLowerCase());
   body.set("password", password);
 
-  const res = await fetch(`${API}/auth/login`, {
+  const res = await fetch("/api/auth/login", { // ✅ FIXED
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     body,
+    cache: "no-store",
   });
 
   if (!res.ok) {
@@ -48,5 +71,6 @@ export async function loginUser(email: string, password: string): Promise<LoginR
     }
     throw new Error(message);
   }
-  return (await res.json()) as LoginResponse;
+
+  return res.json();
 }
