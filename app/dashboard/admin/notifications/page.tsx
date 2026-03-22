@@ -1,6 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
-export const revalidate = 0
+export const revalidate = false;
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { SidebarNav } from "@/components/ui/sidebar-nav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
