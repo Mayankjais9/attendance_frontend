@@ -1,19 +1,29 @@
 export async function GET(req: Request) {
-  const token = req.headers.get("authorization");
+  try {
+    const token = req.headers.get("authorization");
 
-  const res = await fetch("http://3.110.204.3:8081/auth/me", {
-    method: "GET",
-    headers: {
-      Authorization: token || "",
-    },
-  });
+    const res = await fetch("http://13.233.144.23:8081/auth/me", {
+      method: "GET",
+      headers: {
+        Authorization: token || "",
+      },
+      cache: "no-store",
+    });
 
-  const data = await res.text();
+    const data = await res.text();
 
-  return new Response(data, {
-    status: res.status,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+    return new Response(data, {
+      status: res.status,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.error("AUTH ME ERROR:", err);
+
+    return new Response(
+      JSON.stringify({ error: "Backend not reachable" }),
+      { status: 500 }
+    );
+  }
 }

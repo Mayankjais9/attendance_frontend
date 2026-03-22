@@ -2,12 +2,13 @@ export async function POST(req: Request) {
   try {
     const body = await req.text();
 
-    const res = await fetch("http://3.110.204.3:8081/auth/login", {
+    const res = await fetch("http://13.233.144.23:8081/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body,
+      cache: "no-store",
     });
 
     const data = await res.text();
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (err) {
-    console.error("PROXY ERROR:", err);
+    console.error("PROXY LOGIN ERROR:", err);
 
     return new Response(
       JSON.stringify({ error: "Backend not reachable" }),
