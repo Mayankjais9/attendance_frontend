@@ -52,7 +52,7 @@ export default function Page() {
       form.set("username", email.trim().toLowerCase());
       form.set("password", password);
 
-      const loginRes = await fetch(`${API}/auth/login`, {
+      const loginRes = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
