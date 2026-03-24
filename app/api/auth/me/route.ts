@@ -2,7 +2,7 @@ export async function GET(req: Request) {
   try {
     const token = req.headers.get("authorization");
 
-    const res = await fetch("http://13.233.82.168:8081/auth/me", {
+    const res = await fetch("http://65.2.3.19:8081/auth/me", {
       method: "GET",
       headers: {
         Authorization: token || "",

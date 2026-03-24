@@ -2,7 +2,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.text();
 
-    const res = await fetch("http://13.233.82.168:8081/auth/login", {
+    const res = await fetch("http://65.2.3.19:8081/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
