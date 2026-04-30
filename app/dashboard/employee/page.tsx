@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Progress } from "@/components/ui/progress";
 import { AttendanceMarking } from "@/components/attendance-marking";
+import { api } from "@/lib/api";
 import {
   LayoutDashboard,
   Clock,
@@ -30,12 +31,10 @@ const sidebarItems = [
   { title: "Notifications", href: "/dashboard/employee/notifications", icon: Bell },
 ];
 
-const API = "/api";
-
 type TodayResp = {
   attendance_id?: number;
   date: string;
-  status: string | null; // Present | WFM | Leave | null
+  status: string | null;
   checkin_time?: string | null;
   checkout_time?: string | null;
   can_mark: boolean;
@@ -48,10 +47,16 @@ type SummaryResp = {
   unread_notifications: number;
 };
 
+type NotificationItem = {
+  id: number;
+  title: string;
+  description: string;
+  time: string | null;
+};
+
 export default function EmployeeDashboard() {
   const [userName, setUserName] = useState<string>("John Doe");
   const [userEmail, setUserEmail] = useState<string>("john.doe@company.com");
-
   const [today, setToday] = useState<TodayResp>({ date: "", status: null, can_mark: true });
   const [summary, setSummary] = useState<SummaryResp>({
     today_status: null,
@@ -59,7 +64,7 @@ export default function EmployeeDashboard() {
     pending_leaves: 0,
     unread_notifications: 0,
   });
-
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
   const [checkOutTime, setCheckOutTime] = useState<Date | null>(null);
@@ -67,100 +72,101 @@ export default function EmployeeDashboard() {
   const [attendanceMap, setAttendanceMap] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
-  // Fetch profile + today + summary
   useEffect(() => {
-    const token = localStorage.getItem("token") || "";
-
-    fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => (r.ok ? r.json() : null))
+    api<{ full_name?: string; email?: string }>("/auth/me")
       .then((me) => {
         if (me?.full_name) setUserName(me.full_name);
         if (me?.email) setUserEmail(me.email);
-      });
+      })
+      .catch(() => null);
 
-    fetch(`${API}/attendance/today`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: TodayResp | null) => {
-        if (!data) return;
+    api<TodayResp>("/attendance/today")
+      .then((data) => {
         setToday(data);
         const status = (data.status || "").toLowerCase();
-        setIsCheckedIn(status === "present");
+        setIsCheckedIn(status === "present" && !data.checkout_time);
         if (data.checkin_time) setCheckInTime(new Date(data.checkin_time));
         if (data.checkout_time) setCheckOutTime(new Date(data.checkout_time));
-      });
+      })
+      .catch(() => null);
 
-    fetch(`${API}/summary/dashboard`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: SummaryResp | null) => {
-        if (data) setSummary(data);
-      });
+    api<SummaryResp>("/summary/dashboard")
+      .then(setSummary)
+      .catch(() => null);
 
-    fetch(`${API}/attendance/month`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((arr: { date: string; status: string }[]) => {
+    api<{ date: string; status: string }[]>("/attendance/month")
+      .then((arr) => {
         const map: Record<string, string> = {};
-        arr.forEach((d) => (map[d.date] = d.status.toLowerCase()));
+        arr.forEach((item) => {
+          const normalized = item.status.toLowerCase();
+          map[item.date] = normalized === "absent" ? "leave" : normalized;
+        });
         setAttendanceMap(map);
-      });
+      })
+      .catch(() => null);
+
+    api<NotificationItem[]>("/attendance/notifications/my?limit=3")
+      .then(setNotifications)
+      .catch(() => setNotifications([]));
   }, []);
 
   const attendancePercentage = useMemo(() => {
-    const now = new Date();
-    const daysSoFar = now.getDate();
+    const daysSoFar = new Date().getDate();
     if (daysSoFar <= 0) return 0;
     const pct = Math.round((summary.month_days_marked / daysSoFar) * 100);
     return Math.max(0, Math.min(100, pct));
   }, [summary.month_days_marked]);
 
-  // --- Clock In / Clock Out ---
   async function handleClockIn() {
     if (!today.can_mark || busy) return;
     setBusy(true);
     try {
-      const token = localStorage.getItem("token") || "";
-      const res = await fetch(`${API}/attendance/mark`, {
+      await api<{ ok: boolean; status: string; location: string }>("/attendance/mark", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: "Present" }),
+        body: JSON.stringify({
+          status: "Present",
+        }),
       });
-      if (!res.ok) {
-        alert(await res.text());
-        return;
-      }
+
+      const now = new Date();
       setIsCheckedIn(true);
-      setCheckInTime(new Date());
-      setToday((t) => ({ ...t, status: "Present", can_mark: false }));
+      setCheckInTime(now);
+      setToday((prev) => ({
+        ...prev,
+        status: "Present",
+        checkin_time: now.toISOString(),
+        can_mark: false,
+      }));
+      setSummary((prev) => ({
+        ...prev,
+        today_status: "Present",
+        month_days_marked: prev.month_days_marked + (prev.today_status ? 0 : 1),
+      }));
+    } catch (error: any) {
+      console.error("[employee-dashboard] clock in failed", error);
     } finally {
       setBusy(false);
     }
   }
 
   async function handleClockOut() {
-    const token = localStorage.getItem("token") || "";
-    const res = await fetch(`${API}/attendance/clockout`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) {
-      setCheckOutTime(new Date());
+    try {
+      const res = await api<{ ok: boolean; checkout_time: string }>("/attendance/clockout", {
+        method: "POST",
+      });
+      setCheckOutTime(new Date(res.checkout_time));
       setIsCheckedIn(false);
       alert("Clocked out successfully!");
-    } else {
-      alert(await res.text());
+    } catch (error: any) {
+      console.error("[employee-dashboard] clock out failed", error);
     }
   }
 
   const getAttendanceStatus = (date: Date) => {
-    const d = date.toISOString().split("T")[0];
-    return attendanceMap[d];
+    const value = date.toISOString().split("T")[0];
+    return attendanceMap[value];
   };
 
-  // ---------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------
   return (
     <RequireRole allow={["Employee", "Manager", "HR", "Admin"]}>
       <DashboardLayout sidebar={<SidebarNav items={sidebarItems} />} userName={userName} userEmail={userEmail}>
@@ -173,7 +179,6 @@ export default function EmployeeDashboard() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Today's Status */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Today's Status</CardTitle>
@@ -193,7 +198,6 @@ export default function EmployeeDashboard() {
               </CardContent>
             </Card>
 
-            {/* Time Tracking (Clock In + Clock Out Buttons) */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Time Tracking</CardTitle>
@@ -201,7 +205,6 @@ export default function EmployeeDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-3 w-full">
-                  {/* Clock In */}
                   <Button
                     onClick={handleClockIn}
                     className="w-full"
@@ -211,7 +214,6 @@ export default function EmployeeDashboard() {
                     {busy ? "Clocking In..." : "Clock In"}
                   </Button>
 
-                  {/* Clock Out */}
                   <Button
                     onClick={handleClockOut}
                     className="w-full"
@@ -232,7 +234,6 @@ export default function EmployeeDashboard() {
               </CardContent>
             </Card>
 
-            {/* Monthly Attendance */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Monthly Attendance</CardTitle>
@@ -248,7 +249,6 @@ export default function EmployeeDashboard() {
             </Card>
           </div>
 
-          {/* Attendance Calendar + Stats */}
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
@@ -308,18 +308,14 @@ export default function EmployeeDashboard() {
                       <AlertCircle className="h-4 w-4 text-chart-5" />
                       <span className="text-sm">Work From Home</span>
                     </div>
-                    <span className="font-semibold">
-                      {Object.values(attendanceMap).filter((s) => s === "wfm").length}
-                    </span>
+                    <span className="font-semibold">{Object.values(attendanceMap).filter((s) => s === "wfm").length}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <XCircle className="h-4 w-4 text-destructive" />
                       <span className="text-sm">Leave Days</span>
                     </div>
-                    <span className="font-semibold">
-                      {Object.values(attendanceMap).filter((s) => s === "leave").length}
-                    </span>
+                    <span className="font-semibold">{Object.values(attendanceMap).filter((s) => s === "leave").length}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -330,7 +326,19 @@ export default function EmployeeDashboard() {
                   <CardDescription>Latest updates and reminders</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="text-sm text-muted-foreground">No notifications yet.</div>
+                  {notifications.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">No notifications yet.</div>
+                  ) : (
+                    notifications.map((item) => (
+                      <div key={item.id} className="rounded-lg border p-3">
+                        <div className="font-medium text-sm">{item.title}</div>
+                        <div className="text-sm text-muted-foreground">{item.description}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {item.time ? new Date(item.time).toLocaleString() : "Just now"}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </div>

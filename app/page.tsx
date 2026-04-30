@@ -20,10 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { API, loginUser } from "@/lib/api";
 
 type UserRole = "employee" | "manager" | "hr" | "admin";
 
-const API = "/api"; // ✅ FIXED (proxy base)
 const norm = (s: string) => (s || "").trim().toLowerCase();
 
 const ROLE_PATHS: Record<UserRole, string> = {
@@ -43,42 +43,16 @@ export default function Page() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    console.log("🔥 LOGIN USING PROXY /api/auth/login");
     setError(null);
     setBusy(true);
 
     try {
-      // 🔥 LOGIN
-      const form = new URLSearchParams();
-      form.set("username", email.trim().toLowerCase());
-      form.set("password", password);
-
-      const loginRes = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: form,
-      });
-
-      if (!loginRes.ok) {
-        const msg = await loginRes.text().catch(() => "");
-        throw new Error(msg || `Login failed: ${loginRes.status}`);
-      }
-
-      const loginData: {
-        access_token: string;
-        token_type?: string;
-        role?: string;
-        roles?: string[];
-      } = await loginRes.json();
-
+      const loginData = await loginUser(email, password);
       const token = loginData.access_token;
       if (!token) throw new Error("No token returned.");
 
       localStorage.setItem("token", token);
 
-      // 🔥 FETCH ROLES
       let rawRoles: string[] = [];
 
       if (Array.isArray(loginData.roles)) {
@@ -94,7 +68,7 @@ export default function Page() {
 
         if (!meRes.ok) {
           const msg = await meRes.text().catch(() => "");
-          throw new Error(msg || `Failed to fetch profile`);
+          throw new Error(msg || "Failed to fetch profile");
         }
 
         const me = await meRes.json();
@@ -104,9 +78,7 @@ export default function Page() {
 
       if (!rawRoles.length) throw new Error("No role found");
 
-      // 🔥 SAVE ROLES
       const rolesLower = rawRoles.map((r) => norm(r)) as UserRole[];
-
       localStorage.setItem("roles", JSON.stringify(rolesLower));
 
       document.cookie = `roles=${encodeURIComponent(
@@ -114,7 +86,6 @@ export default function Page() {
       )}; Path=/`;
       document.cookie = `token=${encodeURIComponent(token)}; Path=/`;
 
-      // 🔥 VALIDATE ROLE
       const selected = norm(role) as UserRole;
 
       if (!rolesLower.includes(selected)) {
@@ -124,7 +95,6 @@ export default function Page() {
         return;
       }
 
-      // 🔥 REDIRECT
       router.push(ROLE_PATHS[selected]);
     } catch (err: any) {
       setError(err?.message || "Login failed");
@@ -136,7 +106,6 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        {/* Brand */}
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 flex items-center justify-center">
             <img src="/logo.png" alt="AttendanceHub" className="h-12 w-12" />
@@ -149,7 +118,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Login Card */}
         <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-2xl text-center">

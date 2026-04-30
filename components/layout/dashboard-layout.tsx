@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import type { ReactNode } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -14,7 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, LogOut, Settings, User } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { api, type MeResponse } from "@/lib/api"
+import { usePathname, useRouter } from "next/navigation"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -32,6 +33,40 @@ export function DashboardLayout({
   userAvatar,
 }: DashboardLayoutProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const [profile, setProfile] = useState<{ name: string; email: string; roles: string[] }>({
+    name: userName,
+    email: userEmail,
+    roles: [],
+  })
+
+  const roleBasePath = useMemo(() => {
+    const match = pathname.match(/^\/dashboard\/([^/]+)/)
+    const segment = match?.[1]
+    if (segment && segment !== "profile") {
+      return `/dashboard/${segment}`
+    }
+    const storedRoles =
+      typeof window !== "undefined"
+        ? JSON.parse(localStorage.getItem("roles") || "[]")
+        : []
+    const firstRole = Array.isArray(storedRoles) ? storedRoles[0] : "employee"
+    return `/dashboard/${firstRole || "employee"}`
+  }, [pathname])
+
+  useEffect(() => {
+    api<MeResponse>("/auth/me")
+      .then((me) => {
+        setProfile({
+          name: me.full_name || userName,
+          email: me.email || userEmail,
+          roles: Array.isArray(me.roles) ? me.roles : [],
+        })
+      })
+      .catch((error) => {
+        console.error("[layout] failed to fetch profile", error)
+      })
+  }, [userEmail, userName])
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -52,26 +87,27 @@ export function DashboardLayout({
   const handleNotificationClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log("[v0] Notification clicked")
     try {
-      router.push("/dashboard/employee/notifications")
+      router.push(`${roleBasePath}/notifications`)
     } catch (error) {
-      console.error("[v0] Navigation error:", error)
+      console.error("[layout] notification navigation error:", error)
     }
   }
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log("[v0] Profile clicked")
-    alert("Profile clicked - functionality can be added here")
+    router.push("/dashboard/profile")
   }
 
   const handleSettingsClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log("[v0] Settings clicked")
-    alert("Settings clicked - functionality can be added here")
+    if (roleBasePath === "/dashboard/admin" || roleBasePath === "/dashboard/hr") {
+      router.push(`${roleBasePath}/settings`)
+      return
+    }
+    router.push(roleBasePath)
   }
 
   return (
@@ -93,9 +129,6 @@ export function DashboardLayout({
               type="button"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full text-xs flex items-center justify-center text-destructive-foreground">
-                3
-              </span>
             </Button>
 
             <DropdownMenu>
@@ -110,9 +143,9 @@ export function DashboardLayout({
                   }}
                 >
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={userAvatar || "/placeholder.svg"} alt={userName} />
+                    <AvatarImage src={userAvatar || "/placeholder.svg"} alt={profile.name} />
                     <AvatarFallback>
-                      {userName
+                      {profile.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -129,8 +162,11 @@ export function DashboardLayout({
               >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{userName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
+                    <p className="text-sm font-medium leading-none">{profile.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{profile.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground capitalize">
+                      {(profile.roles[0] || "").toLowerCase()}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

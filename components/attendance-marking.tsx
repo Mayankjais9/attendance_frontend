@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Home, Calendar } from "lucide-react"
@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-
-const API = "/api";
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { api } from "@/lib/api"
 
 interface AttendanceMarkingProps {
   userName?: string
@@ -39,12 +39,22 @@ export function AttendanceMarking({
   const [pendingStatus, setPendingStatus] = useState<string | null>(null)
   const [reason, setReason] = useState("")
   const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [messageType, setMessageType] = useState<"success" | "error" | null>(null)
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+  useEffect(() => {
+    api<{ status: string | null; can_mark: boolean }>("/attendance/today")
+      .then((data) => {
+        if (data.status) {
+          setSelectedStatus(data.status.toLowerCase() === "absent" ? "leave" : data.status.toLowerCase())
+          setIsSubmitted(!data.can_mark)
+        }
+      })
+      .catch((error) => {
+        console.error("[attendance-marking] failed to load today status", error)
+      })
+  }, [])
 
-  // ---------------------------------------------------------------------------
-  // Core Handlers
-  // ---------------------------------------------------------------------------
   const handleStatusSelect = async (status: string) => {
     if (busy) return
     if (status === "wfh" || status === "leave") {
@@ -58,52 +68,26 @@ export function AttendanceMarking({
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Call Backend for Present
-  // ---------------------------------------------------------------------------
   const markPresent = async () => {
     try {
       setBusy(true)
-
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        if (!navigator.geolocation) return reject(new Error("Geolocation not supported"))
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-        })
-      })
-
-      const lat = position.coords.latitude
-      const lon = position.coords.longitude
-
-      const res = await fetch(`${API}/attendance/mark`, {
+      await api("/attendance/mark", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: "Present", lat, lon }),
+        body: JSON.stringify({ status: "Present" }),
       })
-
-      if (!res.ok) {
-        const errText = await res.text()
-        alert(errText)
-        return
-      }
-
-      alert("Attendance marked as Present ✅")
       setSelectedStatus("present")
       setIsSubmitted(true)
+      setMessageType("success")
+      setMessage("Attendance marked as Present.")
     } catch (err: any) {
-      alert(err.message || "Unable to get location or mark attendance.")
+      console.error("[attendance-marking] mark present failed", err)
+      setMessageType("error")
+      setMessage(err.message || "Unable to mark attendance.")
     } finally {
       setBusy(false)
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Call Backend for WFH / Leave
-  // ---------------------------------------------------------------------------
   const handleReasonSubmit = async () => {
     if (!reason.trim() || !pendingStatus) return
 
@@ -111,29 +95,21 @@ export function AttendanceMarking({
       setBusy(true)
 
       const status = pendingStatus === "wfh" ? "WFM" : "Absent"
-      const res = await fetch(`${API}/attendance/mark`, {
+      await api("/attendance/mark", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ status, reason }),
       })
-
-      if (!res.ok) {
-        const errText = await res.text()
-        alert(errText)
-        return
-      }
-
-      alert(`Attendance marked as ${status} ✅`)
       setSelectedStatus(pendingStatus)
       setIsSubmitted(true)
       setShowReasonDialog(false)
       setReason("")
       setPendingStatus(null)
+      setMessageType("success")
+      setMessage(`Attendance marked as ${status}.`)
     } catch (err: any) {
-      alert(err.message || "Error submitting attendance.")
+      console.error("[attendance-marking] mark status failed", err)
+      setMessageType("error")
+      setMessage(err.message || "Error submitting attendance.")
     } finally {
       setBusy(false)
     }
@@ -154,9 +130,6 @@ export function AttendanceMarking({
     })
   }
 
-  // ---------------------------------------------------------------------------
-  // UI
-  // ---------------------------------------------------------------------------
   return (
     <>
       <Card className="w-full max-w-4xl mx-auto">
@@ -181,8 +154,13 @@ export function AttendanceMarking({
             <p className="text-muted-foreground">Select your attendance status for today</p>
           </div>
 
+          {message && (
+            <Alert className={messageType === "error" ? "border-destructive" : "border-chart-1"}>
+              <AlertDescription>{message}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-            {/* Present */}
             <Button
               variant={selectedStatus === "present" ? "default" : "outline"}
               className={`h-24 flex flex-col gap-2 text-base font-medium ${
@@ -194,10 +172,9 @@ export function AttendanceMarking({
               disabled={isSubmitted || busy}
             >
               <CheckCircle className="h-6 w-6" />
-              {busy && selectedStatus !== "present" ? "Marking..." : "Present"}
+              {busy && selectedStatus !== "present" ? "Marking..." : isSubmitted && selectedStatus === "present" ? "Marked" : "Present"}
             </Button>
 
-            {/* WFH */}
             <Button
               variant={selectedStatus === "wfh" ? "default" : "outline"}
               className={`h-24 flex flex-col gap-2 text-base font-medium ${
@@ -212,7 +189,6 @@ export function AttendanceMarking({
               Work From Home
             </Button>
 
-            {/* Leave */}
             <Button
               variant={selectedStatus === "leave" ? "default" : "outline"}
               className={`h-24 flex flex-col gap-2 text-base font-medium ${
@@ -230,13 +206,12 @@ export function AttendanceMarking({
 
           {isSubmitted && (
             <div className="text-center text-sm text-muted-foreground">
-              Your attendance was recorded at {getCurrentTime()} ✅
+              Your attendance was recorded at {getCurrentTime()}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Reason Dialog */}
       <Dialog open={showReasonDialog} onOpenChange={setShowReasonDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
